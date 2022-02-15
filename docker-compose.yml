@@ -1,0 +1,41 @@
+version: '3'
+
+volumes:
+  dbdata:
+
+services:
+  db:
+    image: postgres:11
+    container_name: db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./dbdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgre
+      POSTGRES_PASSWORD: postgre
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+
+  docker:
+    build: .
+    container_name: docker
+    command: uwsgi --socket :8001 --module djangoproj.wsgi --enable-threads
+    volumes:
+      - ./src:/code
+      - ./src/static:/static
+    expose:
+      - "8001"
+    depends_on:
+      - db
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./nginx/conf:/etc/nginx/conf.d
+      - ./nginx/uwsgi_params:/etc/nginx/uwsgi_params
+      - ./src/static:/static
+    depends_on:
+      - docker

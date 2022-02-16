@@ -1,8 +1,5 @@
 version: '3'
 
-volumes:
-  dbdata:
-
 services:
   db:
     image: postgres:11
